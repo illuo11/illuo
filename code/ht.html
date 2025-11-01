@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Каталог фільмів</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+      }
+
+      th {
+        background: #4caf50;
+        color: white;
+      }
+
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      .favourite {
+        font-weight: bold;
+        color: #d9534f;
+      }
+
+      button {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <form class="movie-form js-movie-form">
+      <label for="title">Додати фільм:</label>
+      <input type="text" name="title" id="title" placeholder="Назва" required />
+      <input
+        type="text"
+        name="director"
+        id="director"
+        placeholder="Режисер"
+        required
+      />
+      <input type="number" name="year" id="year" placeholder="Рік" required />
+      <input
+        type="text"
+        name="genres"
+        id="genres"
+        placeholder="Жанри (через кому)"
+        required
+      />
+      <input
+        type="number"
+        name="rating"
+        id="rating"
+        placeholder="Рейтинг (0-10)"
+        min="0"
+        max="10"
+        step="0.5"
+        required
+      />
+      <label
+        ><input type="checkbox" name="availableOnline" id="availableOnline" />
+        Доступний онлайн</label
+      >
+      <label
+        ><input type="checkbox" name="favourite" id="favourite" />
+        Улюблений</label
+      >
+      <button type="submit">Додати</button>
+    </form>
+
+    <h1>Каталог фільмів</h1>
+
+    <table id="movieTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Назва</th>
+          <th>Режисер</th>
+          <th>Рік</th>
+          <th>Жанри</th>
+          <th>Рейтинг</th>
+          <th>Онлайн</th>
+          <th>❤</th>
+          <th>Дії</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script type="module" src="j.js"></script>
+  </body>
+</html>

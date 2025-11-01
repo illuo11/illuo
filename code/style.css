@@ -1,0 +1,37 @@
+.modal-background {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.378);
+  /* transition: opacity 150ms ease; */
+}
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  transform: translate(-50%, -50%) scale(1);
+  background-color: white;
+  padding: 1rem;
+  border-radius: 1rem;
+
+  transition: transform 300ms ease-in-out;
+}
+
+.hidden {
+  /* display: none; */
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hidden .modal {
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+.genres {
+  text-transform: lowercase;
+}

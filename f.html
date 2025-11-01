@@ -1,0 +1,277 @@
+import React, { useState } from "react";
+
+// Односторінковий React-компонент магазину кофть
+// Використовує Tailwind CSS для стилів. Default export – готовий компонент.
+// Функції: каталог, кошик, промокоди, подарунок при замовленні, безкоштовна доставка.
+
+export default function HoodieShop() {
+  const [products] = useState([
+    {
+      id: 1,
+      name: "Кофта " + "Classic",
+      price: 799,
+      color: "Чорна",
+      img: "https://images.unsplash.com/photo-1520975914232-8a3d0a5a3b8d?auto=format&fit=crop&w=800&q=60",
+      sizes: ["S", "M", "L", "XL"],
+    },
+    {
+      id: 2,
+      name: "Кофта Oversize",
+      price: 999,
+      color: "Сіра",
+      img: "https://images.unsplash.com/photo-1600180758890-9a9d9f7b4f3f?auto=format&fit=crop&w=800&q=60",
+      sizes: ["M", "L", "XL"],
+    },
+    {
+      id: 3,
+      name: "Кофта з капюшоном",
+      price: 1199,
+      color: "Темно-зелена",
+      img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=60",
+      sizes: ["S", "M", "L"],
+    },
+  ]);
+
+  const [cart, setCart] = useState([]);
+  const [promo, setPromo] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [showThank, setShowThank] = useState(false);
+  const FREE_SHIPPING_THRESHOLD = 2000; // гривні
+
+  function addToCart(prod, size = "M", qty = 1) {
+    setCart((c) => {
+      // знайти, чи вже є така позиція з тим самим розміром
+      const found = c.find((it) => it.id === prod.id && it.size === size);
+      if (found) {
+        return c.map((it) =>
+          it.id === prod.id && it.size === size ? { ...it, qty: it.qty + qty } : it
+        );
+      }
+      return [...c, { ...prod, size, qty }];
+    });
+  }
+
+  function removeFromCart(index) {
+    setCart((c) => c.filter((_, i) => i !== index));
+  }
+
+  function changeQty(index, delta) {
+    setCart((c) =>
+      c.map((it, i) => (i === index ? { ...it, qty: Math.max(1, it.qty + delta) } : it))
+    );
+  }
+
+  function subtotal() {
+    return cart.reduce((s, it) => s + it.price * it.qty, 0);
+  }
+
+  function discountAmount() {
+    if (!appliedPromo) return 0;
+    if (appliedPromo.type === "percent") return Math.round((subtotal() * appliedPromo.value) / 100);
+    if (appliedPromo.type === "fixed") return appliedPromo.value;
+    return 0;
+  }
+
+  function shippingCost() {
+    const sub = subtotal() - discountAmount();
+    return sub >= FREE_SHIPPING_THRESHOLD || sub === 0 ? 0 : 120; // фіксована доставка 120 грн
+  }
+
+  function total() {
+    return Math.max(0, subtotal() - discountAmount() + shippingCost());
+  }
+
+  function applyPromo() {
+    const code = promo.trim().toUpperCase();
+    // демо-коди
+    const codes = {
+      WELCOME10: { type: "percent", value: 10, label: "-10% для нових клієнтів" },
+      FREEDEL: { type: "fixed", value: 120, label: "Безкоштовна доставка" },
+      BUNDLE5: { type: "percent", value: 5, label: "-5% (пакетна знижка)" },
+    };
+    if (codes[code]) {
+      setAppliedPromo({ code, ...codes[code] });
+      setPromo("");
+    } else {
+      setAppliedPromo({ code: "INVALID", type: "fixed", value: 0, label: "Невірний код" });
+    }
+  }
+
+  function checkout() {
+    // Імітація checkout — очищає кошик і показує подяку
+    setCart([]);
+    setAppliedPromo(null);
+    setShowThank(true);
+    setTimeout(() => setShowThank(false), 4000);
+  }
+
+  // Подарунок: при замовленні від 1500 грн додаємо брендовану наліпку/шопер
+  function giftEligible() {
+    return subtotal() >= 1500;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold">KS</div>
+            <div>
+              <h1 className="text-lg font-semibold">Kofty Studio</h1>
+              <p className="text-xs text-gray-500">Екологічні кофти, ручна упаковка</p>
+            </div>
+          </div>
+
+          <nav className="flex items-center gap-4">
+            <button className="text-sm px-3 py-2 border rounded-md">Каталог</button>
+            <button className="text-sm px-3 py-2 bg-indigo-600 text-white rounded-md" onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}>
+              Контакти
+            </button>
+            <div className="relative">
+              <button className="px-3 py-2 bg-white border rounded-md">Кошик ({cart.length})</button>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <section className="grid md:grid-cols-3 gap-8 items-center">
+          <div className="md:col-span-2">
+            <h2 className="text-3xl font-extrabold">Кофти з душею — старт колекції</h2>
+            <p className="mt-3 text-gray-600">Невеликі тиражі, приємні тканини, пакування як подарунок. Купуй зараз — отримай бонус.</p>
+
+            <div className="mt-6 grid sm:grid-cols-2 gap-4">
+              {products.map((p) => (
+                <article key={p.id} className="bg-white rounded-2xl shadow-sm p-4 flex flex-col">
+                  <img src={p.img} alt={p.name} className="rounded-lg object-cover h-40 w-full mb-3" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{p.name}</h3>
+                    <p className="text-sm text-gray-500">{p.color}</p>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-bold">{p.price} ₴</div>
+                      <div className="text-xs text-gray-500">Розміри: {p.sizes.join(', ')}</div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <select className="border rounded px-2 py-1 text-sm" defaultValue={p.sizes[0]} id={`size-${p.id}`}>
+                        {p.sizes.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm"
+                        onClick={() => {
+                          const sel = document.getElementById(`size-${p.id}`);
+                          const size = sel ? sel.value : p.sizes[0];
+                          addToCart(p, size, 1);
+                        }}
+                      >
+                        Додати в кошик
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <aside className="bg-white rounded-2xl shadow p-5">
+            <h3 className="font-semibold">Швидко про акції</h3>
+            <ul className="mt-3 text-sm text-gray-600 space-y-2">
+              <li>🎁 Подарунок (брендована наліпка) при сумі замовлення від 1500 ₴</li>
+              <li>🚚 Безкоштовна доставка від {FREE_SHIPPING_THRESHOLD} ₴</li>
+              <li>✨ Промокод WELCOME10 — -10% для нових клієнтів</li>
+            </ul>
+
+            <div className="mt-4">
+              <label className="block text-sm text-gray-700">Промокод</label>
+              <div className="flex gap-2 mt-2">
+                <input value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="Введіть код" className="flex-1 border rounded px-3 py-2" />
+                <button onClick={applyPromo} className="px-3 py-2 bg-green-600 text-white rounded-md">Застосувати</button>
+              </div>
+              {appliedPromo && (
+                <div className="mt-2 text-sm">
+                  {appliedPromo.code === 'INVALID' ? (
+                    <span className="text-red-600">Невірний код</span>
+                  ) : (
+                    <span className="text-green-700">Застосовано: {appliedPromo.label}</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 border-t pt-4">
+              <h4 className="font-medium">Кошик</h4>
+              {cart.length === 0 ? (
+                <p className="text-sm text-gray-500 mt-3">Кошик порожній</p>
+              ) : (
+                <div className="space-y-3 mt-3">
+                  {cart.map((it, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <img src={it.img} alt={it.name} className="w-12 h-12 rounded object-cover" />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{it.name} — {it.size}</div>
+                        <div className="text-xs text-gray-500">{it.price} ₴ x {it.qty}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button className="px-2" onClick={() => changeQty(i, -1)}>-</button>
+                        <button className="px-2" onClick={() => changeQty(i, +1)}>+</button>
+                        <button className="px-2 text-red-600" onClick={() => removeFromCart(i)}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="text-sm">
+                    <div className="flex justify-between"><span>Підсумок</span><span>{subtotal()} ₴</span></div>
+                    <div className="flex justify-between"><span>Знижка</span><span>-{discountAmount()} ₴</span></div>
+                    <div className="flex justify-between"><span>Доставка</span><span>{shippingCost()} ₴</span></div>
+                    <div className="flex justify-between font-bold mt-2"><span>Разом</span><span>{total()} ₴</span></div>
+                  </div>
+
+                  <div className="mt-3">
+                    <button onClick={checkout} className="w-full py-2 bg-indigo-600 text-white rounded-md">Оформити замовлення</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 text-xs text-gray-500">
+              <p>Пакування: безкоштовна естетична упаковка до кожного замовлення. Можна додати персональну листівку</p>
+            </div>
+          </aside>
+        </section>
+
+        <section className="mt-12 bg-white rounded-2xl p-6 shadow-sm">
+          <h3 className="font-semibold">Чому це працює</h3>
+          <div className="mt-3 grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
+            <div>
+              <h4 className="font-medium">Подарунки</h4>
+              <p className="mt-1">Маленький бонус — наліпка або шопер — підвищує цінність замовлення і шанс повертатись.</p>
+            </div>
+            <div>
+              <h4 className="font-medium">Промокоди</h4>
+              <p className="mt-1">WELCOME10 привертає перших покупців, а BUNDLE5 мотивує взяти 2+ речі.</p>
+            </div>
+            <div>
+              <h4 className="font-medium">Пакування</h4>
+              <p className="mt-1">Персоналізація пакування — велика річ при інстаграм-розпаковках.</p>
+            </div>
+          </div>
+        </section>
+
+        <footer className="mt-8 text-center text-sm text-gray-500">
+          <p>© {new Date().getFullYear()} Kofty Studio — Зв'язок: +380 00 000 000</p>
+        </footer>
+      </main>
+
+      {/* Thank you toast */}
+      {showThank && (
+        <div className="fixed right-6 bottom-6 bg-white shadow-lg rounded-lg p-4">
+          <strong>Дякуємо за замовлення!</strong>
+          <div className="text-sm text-gray-600">Ми зв'яжемося з вами найближчим часом</div>
+        </div>
+      )}
+    </div>
+  );
+}
